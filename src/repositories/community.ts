@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import community from "../routes/community";
 import { CommunityType } from "../types/community";
 
 export class CommunityRepository {
@@ -35,23 +36,34 @@ export class CommunityRepository {
     type: CommunityType;
     userId: number;
   }) {
-    return prisma.community.create({
-      data: {
-        name,
-        displayName,
-        description,
-        iconUrl,
-        bannerUrl,
-        type,
-        ownerId: userId,
-      },
+    const newCommunity = await prisma.$transaction(async (tx) => {
+      const newCommunity = await tx.community.create({
+        data: {
+          name,
+          displayName,
+          description,
+          iconUrl,
+          bannerUrl,
+          type,
+          ownerId: userId
+        },
+      });
+      await tx.communityMember.create({
+        data: {
+          userId,
+          communityId: (await newCommunity).id,
+          role: "ADMIN",
+        },
+      });
     });
+    return newCommunity;
   }
 
   // Check if a user is a member of a community
   static async isUserMember({ communityId, userId }: { communityId: number; userId: number }) {
     const membership = await prisma.communityMember.findFirst({
       where: { communityId, userId },
+      select: { id: true },
     });
     return !!membership;
   }
@@ -60,6 +72,7 @@ export class CommunityRepository {
   static async isUserAdmin({ communityId, userId }: { communityId: number; userId: number }) {
     const community = await prisma.community.findUnique({
       where: { id: communityId },
+      select: { ownerId: true },
     });
     return community?.ownerId === userId;
   }
@@ -87,6 +100,7 @@ export class CommunityRepository {
       data: {
         communityId: id,
         userId,
+        role: "MEMBER",
       },
     });
   }
@@ -111,7 +125,7 @@ export class CommunityRepository {
   }) {
     return prisma.community.update({
       where: { id },
-      data: { active },
+      data: { nsfw: active },
     });
   }
 
@@ -150,7 +164,7 @@ export class CommunityRepository {
   static async getCommunityMembers({ id }: { id: number }) {
     return prisma.communityMember.findMany({
       where: { communityId: id },
-      include: { user: true },
+      select: { user: true },
     });
   }
 
