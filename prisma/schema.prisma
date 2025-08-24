@@ -16,7 +16,7 @@ model Community {
   iconUrl     String?
   bannerUrl   String?
   type        CommunityType @default(PUBLIC)
-  nsfw        Boolean     @default(false)
+  nsfw        Boolean     @default(false) // Not safe for work flag -- explicit/adult content
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   

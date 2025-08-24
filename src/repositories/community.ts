@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { CommunityType } from "../types/community";
 
 export class CommunityRepository {
   // Get all communities (skip and take)
@@ -19,20 +20,48 @@ export class CommunityRepository {
   // Create a new community
   static async createCommunity({
     name,
+    displayName,
     description,
+    iconUrl,
+    bannerUrl,
+    type,
     userId,
   }: {
     name: string;
+    displayName: string;
     description?: string;
+    iconUrl?: string;
+    bannerUrl?: string;
+    type: CommunityType;
     userId: number;
   }) {
     return prisma.community.create({
       data: {
         name,
+        displayName,
         description,
-        creatorId: userId,
+        iconUrl,
+        bannerUrl,
+        type,
+        ownerId: userId,
       },
     });
+  }
+
+  // Check if a user is a member of a community
+  static async isUserMember({ communityId, userId }: { communityId: number; userId: number }) {
+    const membership = await prisma.communityMember.findFirst({
+      where: { communityId, userId },
+    });
+    return !!membership;
+  }
+
+  // Check if a user is an admin of a community
+  static async isUserAdmin({ communityId, userId }: { communityId: number; userId: number }) {
+    const community = await prisma.community.findUnique({
+      where: { id: communityId },
+    });
+    return community?.ownerId === userId;
   }
 
   // Get a community
@@ -43,10 +72,12 @@ export class CommunityRepository {
   }
 
   // Get posts for a community
-  static async getCommunityPosts({ id }: { id: number }) {
+  static async getCommunityPosts({ id, skip, take }: { id: number, skip: number, take: number }) {
     return prisma.post.findMany({
       where: { communityId: id },
       orderBy: { createdAt: "desc" },
+      skip,
+      take,
     });
   }
 
@@ -81,6 +112,37 @@ export class CommunityRepository {
     return prisma.community.update({
       where: { id },
       data: { active },
+    });
+  }
+
+  // Update a community
+  static async updateCommunity({
+    id,
+    name,
+    displayName,
+    description,
+    iconUrl,
+    bannerUrl,
+    type,
+  }: {
+    id: number;
+    name: string;
+    displayName: string;
+    description?: string;
+    iconUrl?: string;
+    bannerUrl?: string;
+    type: CommunityType;
+  }) {
+    return prisma.community.update({
+      where: { id },
+      data: {
+        name,
+        displayName,
+        description,
+        iconUrl,
+        bannerUrl,
+        type,
+      },
     });
   }
 

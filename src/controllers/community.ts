@@ -8,7 +8,7 @@ export class CommunityController {
     try {
       logger.info("Fetching all communities");
       const skip = parseInt(req.query.skip as string) || 0;
-      const take = parseInt(req.query.take as string) || 10;
+      const take = parseInt(req.query.take as string) || 20;
       const communities = await CommunityService.getAllCommunities({
         skip,
         take,
@@ -30,11 +30,15 @@ export class CommunityController {
   static async createCommunity(req: Request, res: Response) {
     try {
       logger.info("Creating new community");
-      const { name, description } = req.body;
+      const { name, displayName, description, iconUrl, bannerUrl, type } = req.body;
       if (!name) throw new Error("Community name is required");
       const community = await CommunityService.createCommunity({
         name,
+        displayName,
         description,
+        iconUrl,
+        bannerUrl,
+        type,
         userId: parseInt(req.authUser!),
       });
       logger.info("Community created successfully");
@@ -74,7 +78,9 @@ export class CommunityController {
     try {
       logger.info("Fetching posts for community");
       const { id } = req.params;
-      const posts = await CommunityService.getCommunityPosts({ id: parseInt(id) });
+      const skip = parseInt(req.query.skip as string) || 0;
+      const take = parseInt(req.query.take as string) || 20;
+      const posts = await CommunityService.getCommunityPosts({ id: parseInt(id), skip, take });
       logger.info("Posts fetched successfully");
       res.status(200).json({ success: true, data: posts });
     } catch (error: unknown) {
@@ -141,6 +147,7 @@ export class CommunityController {
       const result = await CommunityService.setCommunityActivity({
         id: parseInt(id),
         active,
+        userId: parseInt(req.authUser!),
       });
       logger.info("Community activity updated successfully");
       res.status(200).json({ success: true, data: result });
@@ -155,12 +162,42 @@ export class CommunityController {
     }
   }
 
+  // Update a community
+  static async updateCommunity(req: Request, res: Response) {
+    try {
+      logger.info("Updating community");
+      const { id } = req.params;
+      const userId = parseInt(req.authUser!);
+      const { name, displayName, description, iconUrl, bannerUrl, type } = req.body;
+      const updatedCommunity = await CommunityService.updateCommunity({
+        id: parseInt(id),
+        name,
+        displayName,
+        description,
+        iconUrl,
+        bannerUrl,
+        type,
+        userId
+      });
+      logger.info("Community updated successfully");
+      res.status(200).json({ success: true, data: updatedCommunity });
+    } catch (error: unknown) {
+      logger.error("Error in updateCommunity method");
+      res
+        .status(400)
+        .json({
+          success: false,
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
+    }
+  }
+
   // Get all members of a community
   static async getCommunityMembers(req: Request, res: Response) {
     try {
       logger.info("Fetching community members");
       const { id } = req.params;
-      const members = await CommunityService.getCommunityMembers({ id: parseInt(id) });
+      const members = await CommunityService.getCommunityMembers({ id: parseInt(id), userId: parseInt(req.authUser!) });
       logger.info("Community members fetched successfully");
       res.status(200).json({ success: true, data: members });
     } catch (error: unknown) {
