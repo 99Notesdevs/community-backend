@@ -6,12 +6,14 @@ export class CommentsService {
     postId,
     content,
     userId,
+    commentId
   }: {
     postId: number;
     content: string;
     userId: number;
+    commentId?: number | null;
   }) {
-    return CommentsRepository.addComment({ postId, content, userId });
+    return CommentsRepository.addComment({ postId, content, userId, commentId });
   }
 
   // Get comments for a post (with pagination)
@@ -29,7 +31,10 @@ export class CommentsService {
 
   // Delete a comment
   static async deleteComment({ id, userId }: { id: number; userId: number }) {
-    // Optionally check ownership before deleting (not implemented here)
+    const isOwner = await CommentsRepository.isCommentOwner({ id, userId });
+    if (!isOwner) {
+      throw new Error("Not authorized");
+    }
     return CommentsRepository.deleteComment({ id });
   }
 

@@ -6,18 +6,31 @@ export class CommentsRepository {
     postId,
     content,
     userId,
+    commentId
   }: {
     postId: number;
     content: string;
     userId: number;
+    commentId?: number | null;
   }) {
     return prisma.comment.create({
       data: {
         postId,
         content,
         userId,
+        commentId: commentId || null
       },
     });
+  }
+
+  // Comment Ownership Check
+  static async isCommentOwner({ id, userId }: { id: number; userId: number }) {
+    const comment = await prisma.comment.findUnique({
+      where: { id },
+    });
+    const isUser = comment?.authorId === userId;
+    const isAuthor = comment?.post?.authorId === userId;
+    return isUser || isAuthor;
   }
 
   // Get comments for a post (with pagination)

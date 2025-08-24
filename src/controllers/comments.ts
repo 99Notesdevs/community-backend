@@ -1,19 +1,19 @@
 import { Request, Response } from "express";
 import logger from "..//utils/logger";
 import { CommentsService } from "../services/comments";
-import { parse } from "dotenv";
 
 export class CommentsController {
   // Comment on a post
   static async addComment(req: Request, res: Response) {
     try {
       logger.info("Adding comment to post");
-      const { postId, content } = req.body;
+      const { postId, content, commentId } = req.body;
       if (!postId || !content) throw new Error("Missing postId or content");
       const comment = await CommentsService.addComment({
         postId,
         content,
         userId: parseInt(req.authUser!),
+        commentId: commentId || null
       });
       if (!comment) throw new Error("Failed to add comment");
       logger.info("Comment added successfully");
@@ -99,7 +99,7 @@ export class CommentsController {
     try {
       logger.info("Voting on comment");
       const { id } = req.params;
-      const { voteType } = req.body; // e.g. "up" or "down"
+      const { voteType } = req.body;
       if (!id || !voteType) throw new Error("Missing comment id or voteType");
       const result = await CommentsService.voteComment({
         id: parseInt(id),
