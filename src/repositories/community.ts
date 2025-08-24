@@ -36,6 +36,7 @@ export class CommunityRepository {
     type: CommunityType;
     userId: number;
   }) {
+    // @ts-ignore
     const newCommunity = await prisma.$transaction(async (tx) => {
       const newCommunity = await tx.community.create({
         data: {
