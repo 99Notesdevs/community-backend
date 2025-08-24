@@ -1,0 +1,1 @@
+export type PostType = "TEXT" | "LINK" | "IMAGE" | "VIDEO" | "POLL";

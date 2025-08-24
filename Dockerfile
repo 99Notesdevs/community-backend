@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install --include=dev
 
 # Copy the entire app
 COPY . .
@@ -14,8 +14,8 @@ COPY . .
 # Generate Prisma Client Prior
 RUN npx prisma generate
 
-# Expose server port (Match it with your app)
-EXPOSE 5000
+# Expose server port
+EXPOSE 5555
 
 # Start the server
 CMD ["npm", "run", "dev"]

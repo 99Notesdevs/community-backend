@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { VoteType } from "../types/vote";
 
 export class CommentsRepository {
   // Add a comment to a post
@@ -17,8 +18,8 @@ export class CommentsRepository {
       data: {
         postId,
         content,
-        userId,
-        commentId: commentId || null
+        authorId: userId,
+        parentId: commentId || null
       },
     });
   }
@@ -27,6 +28,7 @@ export class CommentsRepository {
   static async isCommentOwner({ id, userId }: { id: number; userId: number }) {
     const comment = await prisma.comment.findUnique({
       where: { id },
+      include: { post: true },
     });
     const isUser = comment?.authorId === userId;
     const isAuthor = comment?.post?.authorId === userId;
@@ -66,20 +68,20 @@ export class CommentsRepository {
     userId,
   }: {
     id: number;
-    voteType: "up" | "down";
+    voteType: VoteType;
     userId: number;
   }) {
-    return prisma.commentVote.upsert({
+    return prisma.vote.upsert({
       where: {
-        commentId_userId: { commentId: id, userId },
+        userId_commentId: { userId, commentId: id },
       },
       update: {
-        voteType,
+        type: voteType,
       },
       create: {
         commentId: id,
         userId,
-        voteType,
+        type: voteType,
       },
     });
   }

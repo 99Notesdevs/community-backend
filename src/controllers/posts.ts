@@ -7,19 +7,39 @@ export class PostsController {
   static async createPost(req: Request, res: Response) {
     try {
       logger.info("Creating post in community");
-      const { communityId, title, content, type, url, imageUrl, videoUrl } = req.body;
+      const { communityId, title, content, type, url, imageUrl, videoUrl, pollOptions } = req.body;
       if (!communityId || !title || !content)
         throw new Error("Missing required fields");
-      const post = await PostsService.createPost({
-        communityId: Number(communityId),
-        title,
-        content,
-        type,
-        url,
-        imageUrl,
-        videoUrl,
-        userId: Number(req.authUser),
-      });
+      let post;
+      // If post type is POLL and pollOptions are provided, create post and poll options atomically
+      if (
+        type === "POLL" &&
+        Array.isArray(pollOptions) &&
+        pollOptions.length > 0
+      ) {
+        post = await PostsService.createPostWithPoll({
+          communityId: Number(communityId),
+          title,
+          content,
+          type,
+          url,
+          imageUrl,
+          videoUrl,
+          userId: Number(req.authUser),
+          pollOptions,
+        });
+      } else {
+        post = await PostsService.createPost({
+          communityId: Number(communityId),
+          title,
+          content,
+          type,
+          url,
+          imageUrl,
+          videoUrl,
+          userId: Number(req.authUser),
+        });
+      }
       logger.info("Post created successfully");
       res.status(201).json({ success: true, data: post });
     } catch (error: unknown) {

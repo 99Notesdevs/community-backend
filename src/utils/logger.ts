@@ -4,7 +4,7 @@ import PinoLoki from "pino-loki";
 // Loki transport setup
 const transport = PinoLoki({
   host: "http://loki:3100",
-  labels: { app: "shop-service" },
+  labels: { app: "community-service" },
 });
 
 

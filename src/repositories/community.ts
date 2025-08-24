@@ -1,5 +1,4 @@
 import { prisma } from "../config/prisma";
-import community from "../routes/community";
 import { CommunityType } from "../types/community";
 
 export class CommunityRepository {
@@ -165,7 +164,7 @@ export class CommunityRepository {
   static async getCommunityMembers({ id }: { id: number }) {
     return prisma.communityMember.findMany({
       where: { communityId: id },
-      select: { user: true },
+      select: { userId: true },
     });
   }
 

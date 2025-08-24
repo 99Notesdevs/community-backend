@@ -1,4 +1,5 @@
 import { CommentsRepository } from "../repositories/comments";
+import { VoteType } from "../types/vote";
 
 export class CommentsService {
   // Add a comment to a post
@@ -45,7 +46,7 @@ export class CommentsService {
     userId,
   }: {
     id: number;
-    voteType: "up" | "down";
+    voteType: VoteType;
     userId: number;
   }) {
     return CommentsRepository.voteComment({ id, voteType, userId });

@@ -1,4 +1,6 @@
 import { PostsRepository } from "../repositories/posts";
+import { PostType } from "../types/post";
+import { VoteType } from "../types/vote";
 
 export class PostsService {
   // Create a post in a community
@@ -15,13 +17,48 @@ export class PostsService {
     communityId: number;
     title: string;
     content: string;
-    type: string;
+    type: PostType;
     url: string;
     imageUrl: string;
     videoUrl: string;
     userId: number;
   }) {
     return PostsRepository.createPost({ communityId, title, content, type, url, imageUrl, videoUrl, userId });
+  }
+
+  // Create a post with poll options atomically
+  static async createPostWithPoll({
+    communityId,
+    title,
+    content,
+    type,
+    url,
+    imageUrl,
+    videoUrl,
+    userId,
+    pollOptions,
+  }: {
+    communityId: number;
+    title: string;
+    content: string;
+    type: PostType;
+    url: string;
+    imageUrl: string;
+    videoUrl: string;
+    userId: number;
+    pollOptions: string[];
+  }) {
+    return PostsRepository.createPostWithPoll({
+      communityId,
+      title,
+      content,
+      type,
+      url,
+      imageUrl,
+      videoUrl,
+      userId,
+      pollOptions
+    });
   }
 
   // Get a post and its comments
@@ -41,7 +78,7 @@ export class PostsService {
     userId,
   }: {
     id: number;
-    voteType: "up" | "down";
+    voteType: VoteType;
     userId: number;
   }) {
     return PostsRepository.votePost({ id, voteType, userId });

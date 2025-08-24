@@ -1,1 +1,1 @@
-export type CommunityType = "Public" | "Private" | "Restricted";
+export type CommunityType = "PUBLIC" | "PRIVATE" | "RESTRICTED";

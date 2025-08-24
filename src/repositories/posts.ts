@@ -1,4 +1,6 @@
+import { VoteType } from "@prisma/client";
 import { prisma } from "../config/prisma";
+import { PostType } from "../types/post";
 
 export class PostsRepository {
   // Create a post in a community
@@ -15,7 +17,7 @@ export class PostsRepository {
     communityId: number;
     title: string;
     content: string;
-    type: string;
+    type: PostType;
     url: string;
     imageUrl: string;
     videoUrl: string;
@@ -30,8 +32,57 @@ export class PostsRepository {
         url,
         imageUrl,
         videoUrl,
-        userId,
+        authorId: userId,
       },
+    });
+  }
+
+  // Create a post with poll options atomically
+  static async createPostWithPoll({
+    communityId,
+    title,
+    content,
+    type,
+    url,
+    imageUrl,
+    videoUrl,
+    userId,
+    pollOptions,
+  }: {
+    communityId: number;
+    title: string;
+    content: string;
+    type: PostType;
+    url: string;
+    imageUrl: string;
+    videoUrl: string;
+    userId: number;
+    pollOptions: string[];
+  }) {
+    return prisma.$transaction(async (tx) => {
+      const post = await tx.post.create({
+        data: {
+          communityId,
+          title,
+          content,
+          type,
+          url,
+          imageUrl,
+          videoUrl,
+          authorId: userId,
+        },
+      });
+      await Promise.all(
+        pollOptions.map((option) =>
+          tx.pollOption.create({
+            data: {
+              postId: post.id,
+              text: option,
+            },
+          })
+        )
+      );
+      return post;
     });
   }
 
@@ -63,20 +114,20 @@ export class PostsRepository {
     userId,
   }: {
     id: number;
-    voteType: "up" | "down";
+    voteType: VoteType;
     userId: number;
   }) {
-    return prisma.postVote.upsert({
+    return prisma.vote.upsert({
       where: {
-        postId_userId: { postId: id, userId },
+        userId_postId: { userId, postId: id },
       },
       update: {
-        voteType,
+        type: voteType,
       },
       create: {
         postId: id,
         userId,
-        voteType,
+        type: voteType,
       },
     });
   }
