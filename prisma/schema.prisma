@@ -1,0 +1,164 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Community {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  displayName String
+  description String?
+  iconUrl     String?
+  bannerUrl   String?
+  type        CommunityType @default(PUBLIC)
+  nsfw        Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  ownerId     Int
+  members     CommunityMember[]
+  posts       Post[]
+  rules       CommunityRule[]
+  
+  @@map("communities")
+}
+
+model CommunityMember {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  communityId Int
+  role        MemberRole  @default(MEMBER)
+  joinedAt    DateTime    @default(now())
+  
+  community   Community   @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, communityId])
+  @@map("community_members")
+}
+
+model CommunityRule {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  communityId Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  community   Community   @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  
+  @@map("community_rules")
+}
+
+model Post {
+  id           Int      @id @default(autoincrement())
+  title        String
+  content      String?
+  type         PostType   @default(TEXT)
+  url          String?
+  imageUrl     String?
+  videoUrl     String?
+  nsfw         Boolean    @default(false)
+  locked       Boolean    @default(false)
+  votesCount   Int        @default(0)
+  commentsCount Int       @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  authorId     Int
+  communityId  Int
+  community    Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  comments     Comment[]
+  votes        Vote[]
+  pollOptions  PollOption[]
+  
+  @@map("posts")
+}
+
+model Comment {
+  id        Int   @id @default(autoincrement())
+  content   String
+  votesCount Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorId  Int
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parentId  Int?
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  votes     Vote[]
+  
+  @@map("comments")
+}
+
+model Vote {
+  id        Int   @id @default(autoincrement())
+  type      VoteType
+  createdAt DateTime @default(now())
+
+  userId    Int
+  postId    Int?
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  commentId Int?
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@map("votes")
+}
+
+model PollOption {
+  id        Int   @id @default(autoincrement())
+  text      String
+  votes     Int      @default(0)
+  createdAt DateTime @default(now())
+  
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  voters    PollVote[]
+  
+  @@map("poll_options")
+}
+
+model PollVote {
+  id           Int   @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+
+  userId       Int
+  pollOptionId Int
+  pollOption   PollOption @relation(fields: [pollOptionId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, pollOptionId])
+  @@map("poll_votes")
+}
+
+enum CommunityType {
+  PUBLIC
+  PRIVATE
+  RESTRICTED
+}
+
+enum MemberRole {
+  MEMBER
+  MODERATOR
+  ADMIN
+}
+
+enum PostType {
+  TEXT
+  LINK
+  IMAGE
+  VIDEO
+  POLL
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+}

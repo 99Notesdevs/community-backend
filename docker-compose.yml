@@ -1,0 +1,80 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: community_postgres
+    restart: always
+    profiles: ["dev"]   # ✅ Only included when --profile dev is active
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/community/data
+
+  redis:
+    image: redis:alpine
+    container_name: local_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  loki:
+    image: grafana/loki:latest
+    container_name: local_loki
+    restart: always
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config/loki-config.yaml:/etc/loki/loki-config.yaml
+      - /var/lib/loki:/var/lib/loki
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: local_grafana
+    restart: always
+    ports:
+      - "3200:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  app:
+    build: .
+    container_name: local_community
+    restart: always
+    depends_on:
+      - redis
+      - loki
+      - grafana
+      # ⛔ Removed postgres from depends_on
+    ports:
+      - "${GRPC_PORT}:${GRPC_PORT}"
+      - "${PORT}:${PORT}"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_URL: ${REDIS_URL}
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      PORT: ${PORT}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      GRPC_PORT: ${GRPC_PORT}
+      DOMAIN: ${DOMAIN}
+      ENV: ${ENV}
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  grafana-data:
