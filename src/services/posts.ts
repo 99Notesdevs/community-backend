@@ -6,19 +6,27 @@ export class PostsService {
     communityId,
     title,
     content,
+    type,
+    url,
+    imageUrl,
+    videoUrl,
     userId,
   }: {
     communityId: number;
     title: string;
     content: string;
+    type: string;
+    url: string;
+    imageUrl: string;
+    videoUrl: string;
     userId: number;
   }) {
-    return PostsRepository.createPost({ communityId, title, content, userId });
+    return PostsRepository.createPost({ communityId, title, content, type, url, imageUrl, videoUrl, userId });
   }
 
   // Get a post and its comments
-  static async getPostWithComments({ id }: { id: number }) {
-    return PostsRepository.getPostWithComments({ id });
+  static async getPostWithComments({ id, skip, take }: { id: number; skip?: number; take?: number }) {
+    return PostsRepository.getPostWithComments({ id, skip, take });
   }
 
   // Delete a post

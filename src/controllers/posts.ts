@@ -7,13 +7,17 @@ export class PostsController {
   static async createPost(req: Request, res: Response) {
     try {
       logger.info("Creating post in community");
-      const { communityId, title, content } = req.body;
+      const { communityId, title, content, type, url, imageUrl, videoUrl } = req.body;
       if (!communityId || !title || !content)
         throw new Error("Missing required fields");
       const post = await PostsService.createPost({
         communityId: Number(communityId),
         title,
         content,
+        type,
+        url,
+        imageUrl,
+        videoUrl,
         userId: Number(req.authUser),
       });
       logger.info("Post created successfully");
@@ -34,7 +38,9 @@ export class PostsController {
     try {
       logger.info("Fetching post and comments");
       const { id } = req.params;
-      const post = await PostsService.getPostWithComments({ id: Number(id) });
+      const skip = parseInt(req.query.skip as string) || 0;
+      const take = parseInt(req.query.take as string) || 10;
+      const post = await PostsService.getPostWithComments({ id: Number(id), skip, take });
       logger.info("Post and comments fetched successfully");
       res.status(200).json({ success: true, data: post });
     } catch (error: unknown) {
@@ -75,7 +81,7 @@ export class PostsController {
     try {
       logger.info("Voting on post");
       const { id } = req.params;
-      const { voteType } = req.body; // e.g. "up" or "down"
+      const { voteType } = req.body;
       if (!voteType) throw new Error("Missing voteType");
       const result = await PostsService.votePost({
         id: Number(id),
