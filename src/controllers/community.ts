@@ -215,8 +215,9 @@ export class CommunityController {
   static async getPersonalCommunities(req: Request, res: Response) {
     try {
       logger.info("Fetching personal communities");
+      const userId = parseInt(req.authUser!);
       const communities = await CommunityService.getPersonalCommunities({
-        userId: parseInt(req.authUser!),
+        userId,
       });
       logger.info("Personal communities fetched successfully");
       res.status(200).json({ success: true, data: communities });
