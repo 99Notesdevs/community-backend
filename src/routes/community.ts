@@ -10,6 +10,9 @@ community.get('/', CommunityController.getAllCommunities);
 // Create a new community
 community.post('/', authenticate, authorizeRoles(["Admin", "User"]), CommunityController.createCommunity);
 
+// Get personal communities
+community.get('/me', authenticate, authorizeRoles(["Admin", "User"]), CommunityController.getPersonalCommunities);
+
 // Get a community
 community.get('/:id', authenticate, authorizeRoles(["Admin", "User"]), CommunityController.getCommunity);
 
@@ -31,7 +34,5 @@ community.put('/:id', authenticate, authorizeRoles(["Admin", "User"]), Community
 // Get all members of a community
 community.get('/:id/members', authenticate, authorizeRoles(["Admin", "User"]), CommunityController.getCommunityMembers);
 
-// Get personal communities
-community.get('/me', authenticate, authorizeRoles(["Admin", "User"]), CommunityController.getPersonalCommunities);
 
 export default community;
