@@ -117,20 +117,33 @@ export class PostsRepository {
     voteType: VoteType;
     userId: number;
   }) {
-    return prisma.vote.upsert({
-      where: {
-        userId_postId: { userId, postId: id },
-      },
-      update: {
-        type: voteType,
-      },
-      create: {
-        postId: id,
-        userId,
-        type: voteType,
-      },
+    const post = await prisma.$transaction(async (tx) => {
+      const vote = await tx.vote.upsert({
+        where: {
+          userId_postId: { userId, postId: id },
+        },
+        update: {
+          type: voteType,
+        },
+        create: {
+          postId: id,
+          userId,
+          type: voteType,
+        },
+      });
+      const post = await tx.post.update({
+      where: { id:vote.postId },
+      data: {
+        votesCount: {
+          increment: voteType === 'UPVOTE' ? 1 : -1,
+        },
+      }
     });
+    return vote;
+    });
+    return post;
   }
+
 
   // Get posts from all communities (feed)
   static async getFeedPosts({ page, limit }: { page: number; limit: number }) {
@@ -139,6 +152,9 @@ export class PostsRepository {
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },
+      include: {
+        
+      }
     });
   }
 }
