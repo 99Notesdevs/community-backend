@@ -2,8 +2,16 @@ import express from "express";
 import cors from "cors";
 import main from "./routes/index";
 import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 export const app = express();
+
+// Rate limit the requests
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+
+// Avoid clickjacking, MIME sniffing and XSS attacks
+app.use(helmet());
 
 // 1. First parse the request body
 app.use(express.json());
