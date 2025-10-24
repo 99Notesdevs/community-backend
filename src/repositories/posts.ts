@@ -169,4 +169,10 @@ export class PostsRepository {
     });
     return posts;
   }
+
+  // Get a post
+  static async getPost(postId: number) {
+    const post = await prisma.post.findUnique({where: {id: postId}});
+    return post;
+  }
 }

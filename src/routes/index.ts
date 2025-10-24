@@ -6,6 +6,7 @@ import { PostsRepository } from "../repositories/posts";
 import { CommentsRepository } from "../repositories/comments";
 import { authenticate } from "../middlewares/authenticateMiddleware";
 import { authorizeRoles } from "../middlewares/authorizeRoles";
+import bookmarkRouter from "./bookmark";
 const router = Router();
 
 router.get("/healthCheck", (req, res) => {
@@ -17,6 +18,7 @@ router.get("/healthCheck", (req, res) => {
 router.use('/communities', community);
 router.use('/comments', comments);
 router.use('/posts', posts);
+router.use('/bookmark', bookmarkRouter);
 
 // Profile posts route
 router.get('/profile/profile-posts/', authenticate, authorizeRoles(["User"]), async (req, res) => {
