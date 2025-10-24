@@ -157,4 +157,16 @@ export class PostsRepository {
       }
     });
   }
+
+  // Get posts for a user
+  static async getUserPosts(userId: number, skip: number = 0, take: number = 10) {
+    const posts = await prisma.post.findMany({
+      where: {
+        authorId: userId
+      },
+      skip, 
+      take
+    });
+    return posts;
+  }
 }

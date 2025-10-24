@@ -97,4 +97,16 @@ export class CommentsRepository {
     });
     return comment;
   }
+
+  // Get a user's comment
+  static async getUserComments(userId: number, skip: number = 0, take: number = 10) {
+    const comments = await prisma.comment.findMany({
+      where: {
+        authorId: userId
+      },
+      skip,
+      take
+    });
+    return comments;
+  }
 }
