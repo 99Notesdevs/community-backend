@@ -59,7 +59,8 @@ export class CommunityController {
     try {
       logger.info("Fetching community by ID");
       const { id } = req.params;
-      const community = await CommunityService.getCommunity({ id: parseInt(id) });
+      const userId = parseInt(req.authUser!);
+      const community = await CommunityService.getCommunity({ id: parseInt(id), userId });
       logger.info("Community fetched successfully");
       res.status(200).json({ success: true, data: community });
     } catch (error: unknown) {
@@ -80,7 +81,7 @@ export class CommunityController {
       const { id } = req.params;
       const skip = parseInt(req.query.skip as string) || 0;
       const take = parseInt(req.query.take as string) || 20;
-      const posts = await CommunityService.getCommunityPosts({ id: parseInt(id), skip, take });
+      const posts = await CommunityService.getCommunityPosts({ id: parseInt(id), userId: parseInt(req.authUser!), skip, take });
       logger.info("Posts fetched successfully");
       res.status(200).json({ success: true, data: posts });
     } catch (error: unknown) {

@@ -35,17 +35,17 @@ export class CommunityService {
   }
 
   // Get a community
-  static async getCommunity({ id }: { id: number }) {
-    const isMember = await CommunityRepository.isUserMember({ communityId: id, userId: id });
-    const isAdmin = await CommunityRepository.isUserAdmin({ communityId: id, userId: id });
+  static async getCommunity({ id, userId }: { id: number, userId: number }) {
+    const isMember = await CommunityRepository.isUserMember({ communityId: id, userId });
+    const isAdmin = await CommunityRepository.isUserAdmin({ communityId: id, userId });
     if (!(isMember || isAdmin)) throw new Error("Unauthorized: Only members can view community details");
     return CommunityRepository.getCommunity({ id });
   }
 
   // Get posts for a community
-  static async getCommunityPosts({ id, skip, take }: { id: number, skip: number, take: number }) {
-    const isMember = await CommunityRepository.isUserMember({ communityId: id, userId: id });
-    const isAdmin = await CommunityRepository.isUserAdmin({ communityId: id, userId: id });
+  static async getCommunityPosts({ id, userId, skip, take }: { id: number, userId: number, skip: number, take: number }) {
+    const isMember = await CommunityRepository.isUserMember({ communityId: id, userId });
+    const isAdmin = await CommunityRepository.isUserAdmin({ communityId: id, userId });
     if (!(isMember || isAdmin)) throw new Error("Unauthorized: Only members can view community posts");
     return CommunityRepository.getCommunityPosts({ id, skip, take });
   }
