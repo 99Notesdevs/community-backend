@@ -216,7 +216,6 @@ export class CommunityController {
     try {
       logger.info("Fetching personal communities");
       const userId = parseInt(req.authUser!);
-      console.log("userId",userId);
       const communities = await CommunityService.getPersonalCommunities({
         userId,
       });
