@@ -71,18 +71,30 @@ export class CommentsRepository {
     voteType: VoteType;
     userId: number;
   }) {
-    return prisma.vote.upsert({
-      where: {
-        userId_commentId: { userId, commentId: id },
-      },
-      update: {
-        type: voteType,
-      },
-      create: {
-        commentId: id,
-        userId,
-        type: voteType,
-      },
+    const comment = await prisma.$transaction(async (tx) => {
+      const vote = await tx.vote.upsert({
+        where: {
+          userId_commentId: { userId, commentId: id },
+        },
+        update: {
+          type: voteType,
+        },
+        create: {
+          commentId: id,
+          userId,
+          type: voteType,
+        },
+      });
+      await tx.comment.update({
+      where: { id:vote.commentId },
+      data: {
+        votesCount: {
+          increment: voteType === 'UPVOTE' ? 1 : -1,
+        },
+      }
     });
+    return vote;
+    });
+    return comment;
   }
 }
