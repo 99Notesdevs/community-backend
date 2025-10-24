@@ -8,7 +8,7 @@ import helmet from "helmet";
 export const app = express();
 
 // Rate limit the requests
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+// app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
 // Avoid clickjacking, MIME sniffing and XSS attacks
 app.use(helmet());
@@ -23,11 +23,12 @@ app.use(
     origin: [
       "http://main.main.local:3000",
       "http://tests.main.local:5173",
-      "http://shop.main.local:5173",
+      "http://shop.main.local:5174",
+      "http://auth.main.local:5175",
       "http://localhost:44275",
-      "http://13.126.229.93:5173",
+      "http://13.126.229.93:5174",
       "http://13.126.229.93",
-      "http://community.main.local:8080"
+      "http://community.main.local:3002"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
