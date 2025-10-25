@@ -21,7 +21,7 @@ router.use('/posts', posts);
 router.use('/bookmark', bookmarkRouter);
 
 // Profile posts route
-router.get('/profile/profile-posts/', authenticate, authorizeRoles(["User"]), async (req, res) => {
+router.get('/profile/profile-posts/:userId', authenticate, authorizeRoles(["User"]), async (req, res) => {
   try {
     const userId = parseInt(req.params.userId);
     const skip = parseInt(req.query.skip as string) || 0;
@@ -50,7 +50,7 @@ router.get('/profile/profile-posts/', authenticate, authorizeRoles(["User"]), as
 });
 
 // Profile comments route
-router.get('/profile/profile-comments/', authenticate, authorizeRoles(["User"]), async (req, res) => {
+router.get('/profile/profile-comments/:userId', authenticate, authorizeRoles(["User"]), async (req, res) => {
   try {
     const userId = parseInt(req.params.userId);
     const skip = parseInt(req.query.skip as string) || 0;
