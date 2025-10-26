@@ -87,7 +87,7 @@ export class PostsRepository {
   }
 
   // Get a post and its comments
-  static async getPostWithComments({ id, skip, take }: { id: number ; skip?: number; take?: number }) {
+  static async getPostWithComments({ userId, id, skip, take }: { userId: number; id: number ; skip?: number; take?: number }) {
     return prisma.post.findUnique({
       where: { id },
       include: {
@@ -95,6 +95,16 @@ export class PostsRepository {
           orderBy: { createdAt: "desc" },
           skip,
           take,
+          include: {
+            votes: {
+              where: {
+                userId,
+              },
+              select: {
+                type: true,
+              },
+            },
+          },
         },
       },
     });
@@ -146,14 +156,21 @@ export class PostsRepository {
 
 
   // Get posts from all communities (feed)
-  static async getFeedPosts({ page, limit }: { page: number; limit: number }) {
+  static async getFeedPosts({ userId, page, limit }: { userId: number; page: number; limit: number }) {
     const skip = (page - 1) * limit;
     return prisma.post.findMany({
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },
       include: {
-        
+        votes: {
+          where: {
+            userId
+          },
+          select: {
+            type: true
+          }
+        }
       }
     });
   }
@@ -162,10 +179,20 @@ export class PostsRepository {
   static async getUserPosts(userId: number, skip: number = 0, take: number = 10) {
     const posts = await prisma.post.findMany({
       where: {
-        authorId: userId
+        authorId: userId,
       },
-      skip, 
-      take
+      skip,
+      take,
+      include: {
+        votes: {
+          where: {
+            userId,
+          },
+          select: {
+            type: true,
+          },
+        },
+      },
     });
     return posts;
   }

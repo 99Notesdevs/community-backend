@@ -62,8 +62,8 @@ export class PostsService {
   }
 
   // Get a post and its comments
-  static async getPostWithComments({ id, skip, take }: { id: number; skip?: number; take?: number }) {
-    return PostsRepository.getPostWithComments({ id, skip, take });
+  static async getPostWithComments({ userId, id, skip, take }: { userId: number; id: number; skip?: number; take?: number }) {
+    return PostsRepository.getPostWithComments({ userId, id, skip, take });
   }
 
   // Delete a post
@@ -85,7 +85,7 @@ export class PostsService {
   }
 
   // Get posts from all communities (feed)
-  static async getFeedPosts({ page, limit }: { page: number; limit: number }) {
-    return PostsRepository.getFeedPosts({ page, limit });
+  static async getFeedPosts({ userId, page, limit }: { userId: number; page: number; limit: number }) {
+    return PostsRepository.getFeedPosts({ userId, page, limit });
   }
 }

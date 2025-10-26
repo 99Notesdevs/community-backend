@@ -58,9 +58,10 @@ export class PostsController {
     try {
       logger.info("Fetching post and comments");
       const { id } = req.params;
+      const userId = parseInt(req.authUser!);
       const skip = parseInt(req.query.skip as string) || 0;
       const take = parseInt(req.query.take as string) || 10;
-      const post = await PostsService.getPostWithComments({ id: Number(id), skip, take });
+      const post = await PostsService.getPostWithComments({ userId, id: Number(id), skip, take });
       logger.info("Post and comments fetched successfully");
       res.status(200).json({ success: true, data: post });
     } catch (error: unknown) {
@@ -125,9 +126,10 @@ export class PostsController {
   static async getFeedPosts(req: Request, res: Response) {
     try {
       logger.info("Fetching feed posts");
+      const userId = parseInt(req.authUser!);
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const posts = await PostsService.getFeedPosts({ page, limit });
+      const posts = await PostsService.getFeedPosts({ userId, page, limit });
       logger.info("Feed posts fetched successfully");
       res.status(200).json({ success: true, data: posts });
     } catch (error: unknown) {
