@@ -14,6 +14,14 @@ export class CommentsRepository {
     userId: number;
     commentId?: number | null;
   }) {
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+    if (!post) throw new Error("Post not found");
+    await prisma.post.update({
+      where: { id: postId },
+      data: { commentsCount: post.commentsCount + 1 },
+    });
     return prisma.comment.create({
       data: {
         postId,
