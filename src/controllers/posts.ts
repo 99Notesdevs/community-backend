@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import logger from "../utils/logger";
 import { PostsService } from "../services/posts";
+import { getAuthToken } from "../grpc/client/client";
+import jwt from  'jsonwebtoken';
+
+const secret = process.env.TOKEN_SECRET || "";
 
 export class PostsController {
   // Create a post in a community
@@ -122,11 +126,41 @@ export class PostsController {
     }
   }
 
+  private static async extractUserIdFromToken(req: Request): Promise<number> {
+    try {
+      const cookie = req.cookies["token"];
+      if (!cookie) {
+        throw new Error("No token cookie found");
+      }
+
+      const token = cookie.trim();
+      if (!token) {
+        throw new Error("Empty token");
+      }
+
+      const authRepo = await getAuthToken(cookie);
+      if (!authRepo) {
+        throw new Error("Invalid auth token");
+      }
+
+      const decoded = jwt.verify(token, secret) as { id: string };
+      if (!decoded.id) {
+        throw new Error("No user ID in token");
+      }
+
+      logger.info("Identity verified successfully");
+      return parseInt(decoded.id);
+    } catch (error: unknown) {
+      logger.warn("Failed to extract user ID from token:");
+      return 0; // Return 0 for anonymous users
+    }
+  }
+
   // Get posts from all communities (feed)
   static async getFeedPosts(req: Request, res: Response) {
     try {
       logger.info("Fetching feed posts");
-      const userId = parseInt(req.authUser!);
+      const userId = await PostsController.extractUserIdFromToken(req);
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const posts = await PostsService.getFeedPosts({ userId, page, limit });

@@ -22,6 +22,10 @@ export class PollRepository {
     pollOptionId: number;
     userId: number;
   }) {
+    prisma.pollOption.update({
+      where: { id: pollOptionId },
+      data: { votes: { increment: 1 } },
+    });
     // Upsert to respect unique constraint
     return prisma.pollVote.upsert({
       where: { userId_pollOptionId: { userId, pollOptionId } },
