@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { PollController } from "../controllers/polls";
+import { authenticate } from "../middlewares/authenticateMiddleware";
+import { authorizeRoles } from "../middlewares/authorizeRoles";
 
 const poll = Router();
 
@@ -10,7 +12,7 @@ poll.post("/option", PollController.addOption);
 poll.get("/options/:postId", PollController.getOptions);
 
 // Vote on a poll option
-poll.post("/vote", PollController.voteOption);
+poll.post("/vote",authenticate, authorizeRoles(["Admin", "User"]), PollController.voteOption);
 
 // Get poll results for a post
 poll.get("/results/:postId", PollController.getResults);

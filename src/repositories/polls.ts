@@ -2,13 +2,13 @@ import { prisma } from "../config/prisma";
 
 export class PollRepository {
   static async addOption({ postId, text }: { postId: number; text: string }) {
-    return prisma.pollOption.create({
+    return await prisma.pollOption.create({
       data: { postId, text },
     });
   }
 
   static async getOptions({ postId }: { postId: number }) {
-    return prisma.pollOption.findMany({
+    return await prisma.pollOption.findMany({
       where: { postId },
       include: { voters: true },
       orderBy: { createdAt: "asc" },
@@ -22,8 +22,12 @@ export class PollRepository {
     pollOptionId: number;
     userId: number;
   }) {
+    await prisma.pollOption.update({
+      where: { id: pollOptionId },
+      data: { votes: { increment: 1 } },
+    });
     // Upsert to respect unique constraint
-    return prisma.pollVote.upsert({
+    return await prisma.pollVote.upsert({
       where: { userId_pollOptionId: { userId, pollOptionId } },
       update: {},
       create: { userId, pollOptionId },
@@ -32,7 +36,7 @@ export class PollRepository {
 
   static async getResults({ postId }: { postId: number }) {
     // Aggregate votes for each option
-    return prisma.pollOption.findMany({
+    return await prisma.pollOption.findMany({
       where: { postId },
       select: {
         id: true,

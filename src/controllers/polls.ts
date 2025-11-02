@@ -37,10 +37,10 @@ export class PollController {
 
   static async voteOption(req: Request, res: Response) {
     try {
-      const { pollOptionId, userId } = req.body;
+      const { pollOptionId } = req.body;
       const vote = await PollService.voteOption({
         pollOptionId: Number(pollOptionId),
-        userId: Number(userId),
+        userId: Number(req.authUser!),
       });
       res.status(201).json({ success: true, data: vote });
     } catch (error) {

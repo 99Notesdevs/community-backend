@@ -3,6 +3,7 @@ import community from "./community";
 import comments from "./comments";
 import posts from "./posts";
 import bookmarkRouter from "./bookmark";
+import polls from "./polls";
 import profileRouter from "./profile";
 const router = Router();
 
@@ -16,6 +17,7 @@ router.use('/communities', community);
 router.use('/comments', comments);
 router.use('/posts', posts);
 router.use('/bookmark', bookmarkRouter);
+router.use('/polls', polls);
 router.use('/profile', profileRouter);
 
 export default router;
